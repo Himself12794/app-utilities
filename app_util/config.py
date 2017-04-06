@@ -28,7 +28,7 @@ def load_config(environment=None, config_file='config.json', argparser=None):
     parser.add_argument('--environment', '-e', dest='environment', default='dev',
                         choices=VALID_PROFILES)
     parser.add_argument('--debug', '-d', dest='debug', action='store_true')
-    conf = parser.parse_args()
+    conf, _ = parser.parse_known_args()
     environment = environment if environment in VALID_PROFILES else conf.environment
     profile_data = copy.deepcopy(conf)
 
