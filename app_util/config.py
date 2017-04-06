@@ -3,8 +3,9 @@ Holds aplication wide configuration parameters
 '''
 import json
 import logging
-from argparse import Namespace, ArgumentParser
-from cda_util import connections
+import copy
+from argparse import ArgumentParser
+from app_util import connections
 
 VALID_PROFILES = ['dev', 'stage', 'prod']
 LOGGER_FMT = "[%(levelname)s] [%(asctime)s] [%(name)s] - %(message)s"
@@ -29,7 +30,7 @@ def load_config(environment=None, config_file='config.json', argparser=None):
     parser.add_argument('--debug', '-d', dest='debug', action='store_true')
     conf = parser.parse_args()
     environment = environment if environment in VALID_PROFILES else conf.environment
-    profile_data = Namespace()
+    profile_data = copy.deepcopy(conf)
 
     # Enable debug logging as soon as possible
     logging.basicConfig(level=logging.DEBUG if getattr(profile_data, 'debug', False) \
@@ -47,12 +48,12 @@ def load_config(environment=None, config_file='config.json', argparser=None):
             else:
                 for profile in config_data:
                     if profile.get('environment') == environment:
-                        profile_data.__dict__.update(profile)
+                        profile_data.vars().update(profile)
 
         except json.decoder.JSONDecodeError:
             log.error("Could not load config file %s, check your JSON", config_file)
 
-    profile_data.__dict__.update(conf.__dict__)
+    profile_data.vars().update(conf.vars())
     log.info("Loaded environment: %s ", environment)
 
-    return profile_data, connections.Connections(**profile_data.__dict__)
+    return profile_data, connections.Connections(**profile_data.vars())

@@ -26,6 +26,7 @@ class Connections(object):
         self.default_spark_room = kwargs.get('default_spark_room')
         self.spark_token = kwargs.get('spark_token')
         self._mongos = [None] * 16
+        self._auths = {}
 
     def publish_to_spark(self, msg, room=None):
         '''Publishes a message to the spark room via the notification API'''
@@ -61,8 +62,13 @@ class Connections(object):
         '''
         client = self._mongos[num] or MongoClient(self._get_host(num), 18000)
         for auth_db in auth_dbs:
-            client[auth_db].authenticate(self.mongo_db_username, self.mongo_db_password,
-                                         mechanism=SS1)
+            auths = self._auths.get(num, [])
+            if not auth_db in auths:
+                client[auth_db].authenticate(self.mongo_db_username, self.mongo_db_password,
+                                             mechanism=SS1)
+                auths.append(auth_db)
+                self._auths[num] = auths
+                
         return client
 
     def _get_host(self, num):
