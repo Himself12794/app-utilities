@@ -7,10 +7,10 @@ try:
 except ImportError:
     from distutils.core import setup
 
-setup(name='cda-utilities',
+setup(name='app-utilities',
       version='0.0.1',
       author='Philip Whiting',
       author_email='phwhitin@cisco.com',
-      packages=['cda_util'],
+      packages=['app_util'],
       install_requires=['pymongo', 'requests']
      )

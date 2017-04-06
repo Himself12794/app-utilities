@@ -8,8 +8,6 @@ import requests
 LOGGER = logging.getLogger(__name__)
 
 API_BASE = '/code/cda/notification/v1/publish'
-TEST_ROOM_ID = 'Y2lzY29zcGFyazovL3VzL1JPT00vOTUyZTZmZjAtZmQyMy0xMWU2LTliNTktZDM5NjVjYzFlZTFh'
-TEST_TOKEN = 'MzVhMzc3NzYtNDNjYS00MWZkLWJjODgtN2JjMWIwNzgzYTY4YjMwZjE4MGMtNGFj'
 
 SS1 = 'SCRAM-SHA-1'
 
@@ -25,8 +23,8 @@ class Connections(object):
         self.mongo_db_username = kwargs.get('mongo_db_username')
         self.mongo_db_password = kwargs.get('mongo_db_password')
         self.mongo_db_prefix = kwargs.get('mongo_db_prefix')
-        self.default_spark_room = kwargs.get('default_spark_room') or TEST_ROOM_ID
-        self.spark_token = kwargs.get('spark_token') or TEST_TOKEN
+        self.default_spark_room = kwargs.get('default_spark_room')
+        self.spark_token = kwargs.get('spark_token')
         self._mongos = [None] * 16
 
     def publish_to_spark(self, msg, room=None):
