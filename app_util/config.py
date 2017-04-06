@@ -4,7 +4,7 @@ Holds aplication wide configuration parameters
 import json
 import logging
 from argparse import Namespace, ArgumentParser
-from cda_util import connections
+from app_util import connections
 
 VALID_PROFILES = ['dev', 'stage', 'prod']
 LOGGER_FMT = "[%(levelname)s] [%(asctime)s] [%(name)s] - %(message)s"
