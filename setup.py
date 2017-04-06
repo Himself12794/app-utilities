@@ -8,7 +8,7 @@ except ImportError:
     from distutils.core import setup
 
 setup(name='app-utilities',
-      version='0.0.1',
+      version='0.0.2',
       author='Philip Whiting',
       author_email='phwhitin@cisco.com',
       packages=['app_util'],
