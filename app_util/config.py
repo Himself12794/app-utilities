@@ -48,12 +48,12 @@ def load_config(environment=None, config_file='config.json', argparser=None):
             else:
                 for profile in config_data:
                     if profile.get('environment') == environment:
-                        profile_data.vars().update(profile)
+                        profile_data.__dict__.update(profile)
 
         except json.decoder.JSONDecodeError:
             log.error("Could not load config file %s, check your JSON", config_file)
 
-    profile_data.vars().update(conf.vars())
+    profile_data.__dict__.update(conf.__dict__)
     log.info("Loaded environment: %s ", environment)
 
-    return profile_data, connections.Connections(**profile_data.vars())
+    return profile_data, connections.Connections(**profile_data.__dict__)

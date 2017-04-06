@@ -25,7 +25,7 @@ class Connections(object):
         self.mongo_db_prefix = kwargs.get('mongo_db_prefix')
         self.default_spark_room = kwargs.get('default_spark_room')
         self.spark_token = kwargs.get('spark_token')
-        self._mongos = [None] * 16
+        self._mongos = {}
         self._auths = {}
 
     def publish_to_spark(self, msg, room=None):
@@ -60,15 +60,19 @@ class Connections(object):
         Opens and returns a Mongo Client for dft-mongo-num for the specified auth dbs.
         This client is cached to prevent multiple connections
         '''
-        client = self._mongos[num] or MongoClient(self._get_host(num), 18000)
+        host = self._get_host(num)
+        client = self._mongos.get(host, MongoClient(host, 18000))
+        auths = self._auths.get(host, [])
         for auth_db in auth_dbs:
-            auths = self._auths.get(num, [])
             if not auth_db in auths:
                 client[auth_db].authenticate(self.mongo_db_username, self.mongo_db_password,
                                              mechanism=SS1)
                 auths.append(auth_db)
-                self._auths[num] = auths
-                
+
+        self._auths[host] = auths
+        if not host in self._mongos:
+            self._mongos[host] = client
+
         return client
 
     def _get_host(self, num):
