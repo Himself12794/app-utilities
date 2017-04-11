@@ -53,7 +53,7 @@ class Connections(object):
     def _publish_payload(self, payload):
         '''Publishes the payload to the notification API'''
         return requests.post(self.notification_api_url + API_BASE,
-                             headers=JSON_HEADERS, json=payload)
+                             headers=JSON_HEADERS, json=payload, verify=self.environment != 'dev')
 
     def get_mongo(self, num, *auth_dbs):
         '''
