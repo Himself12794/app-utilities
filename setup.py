@@ -8,9 +8,13 @@ except ImportError:
     from distutils.core import setup
 
 setup(name='app-utilities',
-      version='0.1.4',
+      packages=['app_util'],
+      version='0.1.5',
+      description='A utility to fast-track application configurations',
       author='Philip Whiting',
       author_email='phwhitin@cisco.com',
-      packages=['app_util'],
-      install_requires=['pymongo', 'requests']
-      )
+      url='https://github.com/Himself12794/app-utilities',
+      download_url='https://github.com/Himself12794/app-utilities/archive/v0.1.5.tar.gz',
+      keywords=['configuration', 'utility'],
+      install_requires=['pymongo>=3.0.0', 'requests>=2.0.0']
+     )
