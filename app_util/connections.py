@@ -37,12 +37,12 @@ class Connections(object):
         destination['bearerToken'] = self.spark_token
         return self._publish_payload(payload)
 
-    def publish_email_obj(self, email, sender):
+    def publish_email_obj(self, email, sender=''):
         '''Sends an email using the email object'''
         return self.publish_email(email.payload, sender, email.subject,
                                   email.tos, email.ccs, email.bccs)
 
-    def publish_email(self, data, sender, subject='', tos=None, ccs=None, bccs=None):
+    def publish_email(self, data, sender='', subject='', tos=None, ccs=None, bccs=None):
         '''Sends an email via the notification API'''
         payload = _generate_api_payload(data, message_type='EMAIL')
         payload['subject'] = subject
