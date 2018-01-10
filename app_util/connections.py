@@ -65,7 +65,7 @@ class Connections(object):
         This client is cached to prevent multiple connections
         '''
         host = self._get_host(num)
-        client = self._mongos.get(host, MongoClient(host, 18000))
+        client = self._mongos.get(host, MongoClient(host, 18000, serverSelectionTimeoutMS=60000))
         auths = self._auths.get(host, [])
         for auth_db in auth_dbs:
             if not auth_db in auths:
