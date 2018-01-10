@@ -3,7 +3,8 @@ Holds aplication wide configuration parameters
 '''
 import json
 import logging
-from argparse import Namespace, ArgumentParser
+import copy
+from argparse import ArgumentParser
 from app_util import connections
 
 VALID_PROFILES = ['dev', 'stage', 'prod']
@@ -27,9 +28,9 @@ def load_config(environment=None, config_file='config.json', argparser=None):
     parser.add_argument('--environment', '-e', dest='environment', default='dev',
                         choices=VALID_PROFILES)
     parser.add_argument('--debug', '-d', dest='debug', action='store_true')
-    conf = parser.parse_args()
+    conf, _ = parser.parse_known_args()
     environment = environment if environment in VALID_PROFILES else conf.environment
-    profile_data = Namespace()
+    profile_data = copy.deepcopy(conf)
 
     # Enable debug logging as soon as possible
     logging.basicConfig(level=logging.DEBUG if getattr(profile_data, 'debug', False) \

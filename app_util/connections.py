@@ -25,7 +25,8 @@ class Connections(object):
         self.mongo_db_prefix = kwargs.get('mongo_db_prefix')
         self.default_spark_room = kwargs.get('default_spark_room')
         self.spark_token = kwargs.get('spark_token')
-        self._mongos = [None] * 16
+        self._mongos = {}
+        self._auths = {}
 
     def publish_to_spark(self, msg, room=None):
         '''Publishes a message to the spark room via the notification API'''
@@ -36,8 +37,12 @@ class Connections(object):
         destination['bearerToken'] = self.spark_token
         return self._publish_payload(payload)
 
+    def publish_email_obj(self, email, sender=''):
+        '''Sends an email using the email object'''
+        return self.publish_email(email.payload, sender, email.subject,
+                                  email.tos, email.ccs, email.bccs)
 
-    def publish_email(self, data, sender, subject='', tos=None, ccs=None, bccs=None):
+    def publish_email(self, data, sender='', subject='', tos=None, ccs=None, bccs=None):
         '''Sends an email via the notification API'''
         payload = _generate_api_payload(data, message_type='EMAIL')
         payload['subject'] = subject
@@ -52,17 +57,26 @@ class Connections(object):
     def _publish_payload(self, payload):
         '''Publishes the payload to the notification API'''
         return requests.post(self.notification_api_url + API_BASE,
-                             headers=JSON_HEADERS, json=payload)
+                             headers=JSON_HEADERS, json=payload, verify=self.environment != 'dev')
 
-    def get_mongo(self, num, *auth_dbs):
+    def get_mongo(self, num, *auth_dbs, **kwargs):
         '''
         Opens and returns a Mongo Client for dft-mongo-num for the specified auth dbs.
         This client is cached to prevent multiple connections
         '''
-        client = self._mongos[num] or MongoClient(self._get_host(num), 18000)
+        host = self._get_host(num)
+        client = self._mongos.get(host, MongoClient(host, 18000, **kwargs))
+        auths = self._auths.get(host, [])
         for auth_db in auth_dbs:
-            client[auth_db].authenticate(self.mongo_db_username, self.mongo_db_password,
-                                         mechanism=SS1)
+            if not auth_db in auths:
+                client[auth_db].authenticate(self.mongo_db_username, self.mongo_db_password,
+                                             mechanism=SS1)
+                auths.append(auth_db)
+
+        self._auths[host] = auths
+        if not host in self._mongos:
+            self._mongos[host] = client
+
         return client
 
     def _get_host(self, num):
