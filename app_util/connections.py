@@ -59,13 +59,13 @@ class Connections(object):
         return requests.post(self.notification_api_url + API_BASE,
                              headers=JSON_HEADERS, json=payload, verify=self.environment != 'dev')
 
-    def get_mongo(self, num, *auth_dbs):
+    def get_mongo(self, num, *auth_dbs, **kwargs):
         '''
         Opens and returns a Mongo Client for dft-mongo-num for the specified auth dbs.
         This client is cached to prevent multiple connections
         '''
         host = self._get_host(num)
-        client = self._mongos.get(host, MongoClient(host, 18000, serverSelectionTimeoutMS=60000))
+        client = self._mongos.get(host, MongoClient(host, 18000, **kwargs))
         auths = self._auths.get(host, [])
         for auth_db in auth_dbs:
             if not auth_db in auths:
