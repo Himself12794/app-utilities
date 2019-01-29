@@ -20,9 +20,17 @@ class Connections(object):
         '''Init function'''
         self.environment = kwargs.get('environment')
         self.notification_api_url = kwargs.get('notification_api_url')
-        self.mongo_db_username = kwargs.get('mongo_db_username')
-        self.mongo_db_password = kwargs.get('mongo_db_password')
-        self.mongo_db_prefix = kwargs.get('mongo_db_prefix')
+        self.mongo_groups = kwargs.get('mongo_groups', {})
+        mongo_db_username = kwargs.get('mongo_db_username')
+        mongo_db_password = kwargs.get('mongo_db_password')
+        mongo_db_prefix = kwargs.get('mongo_db_prefix')
+        if mongo_db_username and mongo_db_password and mongo_db_prefix:
+            self.mongo_groups['default'] = {
+                'mongo_db_username': mongo_db_username,
+                'mongo_db_password': mongo_db_password,
+                'mongo_db_prefix': mongo_db_prefix
+            }
+
         self.default_spark_room = kwargs.get('default_spark_room')
         self.spark_token = kwargs.get('spark_token')
         self._mongos = {}
@@ -64,12 +72,16 @@ class Connections(object):
         Opens and returns a Mongo Client for dft-mongo-num for the specified auth dbs.
         This client is cached to prevent multiple connections
         '''
-        host = self._get_host(num)
+        if 'group' in kwargs:
+            group = self.mongo_groups.get(kwargs.pop('group'))
+        else:
+            group = self.mongo_groups.get('default')
+        host = self._get_host(num, group)
         client = self._mongos.get(host, MongoClient(host, 18000, **kwargs))
         auths = self._auths.get(host, [])
         for auth_db in auth_dbs:
             if not auth_db in auths:
-                client[auth_db].authenticate(self.mongo_db_username, self.mongo_db_password,
+                client[auth_db].authenticate(group['mongo_db_username'], group['mongo_db_password'],
                                              mechanism=SS1)
                 auths.append(auth_db)
 
@@ -79,11 +91,11 @@ class Connections(object):
 
         return client
 
-    def _get_host(self, num):
+    def _get_host(self, num, group):
         '''Determines host based on config'''
         return {
-            'prod': self.mongo_db_prefix + ('' if num <= 0 else '-' + str(num))
-        }.get(self.environment, self.mongo_db_prefix + str(num + 1))
+            'prod': group['mongo_db_prefix'] + ('' if num <= 0 else '-' + str(num))
+        }.get(self.environment, group['mongo_db_prefix'] + str(num + 1))
 
 def _generate_api_payload(data, message_type='SPARK'):
     '''Generates the payload for a call to the notification API'''
